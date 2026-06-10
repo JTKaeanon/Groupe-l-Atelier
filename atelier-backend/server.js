@@ -20,6 +20,31 @@ const app = express();
 app.use(cors()); 
 app.use(express.json());
 
+// --- MIDDLEWARE DE SÉCURITÉ ADMIN ---
+const verifierAdmin = async (req, res, next) => {
+  try {
+    // récupère l'ID envoyé par Front-End 
+    const userId = req.headers['x-user-id']; 
+    
+    if (!userId) return res.status(401).json({ erreur: "Non autorisé. Identifiant manquant." });
+
+    // vérifie dans la BDD user existe et s'il est bien ADMIN
+    const user = await prisma.utilisateur.findUnique({
+      where: { id: parseInt(userId) }
+    });
+
+    if (!user || user.role !== 'ADMIN') {
+      return res.status(403).json({ erreur: "Accès refusé. Droits administrateur requis." });
+    }
+    
+    // Bon 
+    next(); 
+  } catch (error) {
+    res.status(500).json({ erreur: "Erreur lors de la vérification des droits." });
+  }
+};
+// --- FIN DU MIDDLEWARE ---
+
 // ==========================================
 // TEST API
 // ==========================================
@@ -214,6 +239,12 @@ app.delete('/api/horaires/:id', async (req, res) => {
 app.post('/api/inscription', async (req, res) => {
   try {
     const { nom, prenom, email, mot_de_passe, telephone } = req.body;
+    if (!nom || !prenom || !email || !mot_de_passe) {
+      return res.status(400).json({ erreur: "Tous les champs obligatoires doivent être remplis." });
+    }
+    if (mot_de_passe.length < 8) {
+      return res.status(400).json({ erreur: "Le mot de passe doit contenir au moins 8 caractères pour des raisons de sécurité." });
+    }
     const utilisateurExistant = await prisma.utilisateur.findUnique({ where: { email: email } });
     if (utilisateurExistant) return res.status(400).json({ erreur: "Cet email est déjà utilisé." });
 
@@ -332,7 +363,7 @@ app.delete('/api/reservations/:id', async (req, res) => {
 
 
 // RDV pour les coiffeurs
-app.get('/api/admin/reservations', async (req, res) => {
+app.get('/api/admin/reservations', verifierAdmin, async (req, res) => {
   try {
     const reservations = await prisma.rendezVous.findMany({
       include: {

@@ -5,7 +5,7 @@ import './Navbar.css';
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // 🌟 LECTURE SÉCURISÉE DU NAVIGATEUR (Anti Page Blanche)
+  // Anti Page Blanche
   let utilisateur = null;
   try {
     const utilisateurData = localStorage.getItem('utilisateur');
