@@ -365,12 +365,15 @@ app.delete('/api/reservations/:id', async (req, res) => {
 // RDV pour les coiffeurs (Panneau Admin)
 app.get('/api/admin/reservations', verifierAdmin, async (req, res) => {
   try {
-    const maintenant = new Date();
+    // Aujourd'hui, à 00h00 pile
+    const aujourdHui = new Date();
+    aujourdHui.setHours(0, 0, 0, 0);
 
     // Auto update
     await prisma.rendezVous.updateMany({
       where: {
-        date_rdv: { lt: maintenant }, // "lt" "less than" (antérieur à)
+        // antérieur aujoud'hui et toujours marqué "A_VENIR"
+        date_rdv: { lt: aujourdHui }, 
         statut: "A_VENIR"
       },
       data: {
