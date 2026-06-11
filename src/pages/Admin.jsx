@@ -17,9 +17,13 @@ export default function Admin() {
   const [formSalon, setFormSalon] = useState({ id: null, nom: '', adresse: '', telephone: '', image: '', presentationImage: '', slug: '', description: '', horaires: '' });
   const [isEditingSalon, setIsEditingSalon] = useState(false);
 
+  
+
   const [formStaff, setFormStaff] = useState({ nom: '', role: 'Coiffeur', salonId: '' });
   const [formHoraire, setFormHoraire] = useState({ jour: 'Lundi', heure_debut: '09:00', heure_fin: '18:00', employeId: '' });
   const [reservations, setReservations] = useState([]);
+  const [filtreSalon, setFiltreSalon] = useState("TOUS");
+  const [filtreCoiffeur, setFiltreCoiffeur] = useState("TOUS");
 
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('utilisateur'));
@@ -85,6 +89,14 @@ export default function Admin() {
     }
   };
 
+  // filtrage rdv
+  const reservationsFiltrees = reservations.filter((rdv) => {
+    const correspondSalon = filtreSalon === "TOUS" || rdv.employe.salon.nom === filtreSalon;
+    const correspondCoiffeur = filtreCoiffeur === "TOUS" || rdv.employe.nom === filtreCoiffeur;
+    return correspondSalon && correspondCoiffeur;
+  });
+
+
   // actions staff planning
   const handleAddStaff = async (e) => {
     e.preventDefault();
@@ -129,10 +141,34 @@ export default function Admin() {
       <div className="admin-content">
 
 
-        {/* onglet coiffeur rdv */}
+       {/* onglet coiffeur rdv */}
         {activeTab === 'reservations' && (
           <div className="admin-table-card">
             <h2><i className="bi bi-calendar3"></i> Liste des Rendez-vous</h2>
+
+            {/* filtre */}
+            <div className="filtres-section" style={{ display: 'flex', gap: '20px', marginBottom: '20px', padding: '15px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
+              <div>
+                <label style={{ marginRight: '10px', fontWeight: 'bold' }}>Filtrer par Salon :</label>
+                <select value={filtreSalon} onChange={(e) => setFiltreSalon(e.target.value)} style={{ padding: '5px', borderRadius: '4px' }}>
+                  <option value="TOUS">Tous les salons</option>
+                  <option value="L'atelier mixte">L'atelier mixte</option>
+                  <option value="The Old School">The Old School</option>
+                  <option value="L'Essence de soi">L'Essence de soi</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ marginRight: '10px', fontWeight: 'bold' }}>Filtrer par Coiffeur :</label>
+                <select value={filtreCoiffeur} onChange={(e) => setFiltreCoiffeur(e.target.value)} style={{ padding: '5px', borderRadius: '4px' }}>
+                  <option value="TOUS">Tous les coiffeurs</option>
+                  <option value="Marjorie">Marjorie</option>
+                  <option value="Ringo">Ringo</option>
+                  <option value="Coralie">Coralie</option>
+                </select>
+              </div>
+            </div>
+
             <table className="admin-table">
               <thead>
                 <tr>
@@ -144,7 +180,7 @@ export default function Admin() {
                 </tr>
               </thead>
               <tbody>
-                {reservations.map(r => (
+                {reservationsFiltrees.map(r => (
                   <tr key={r.id}>
                     <td>{new Date(r.date_rdv).toLocaleDateString()} à {r.heure_rdv}</td>
                     <td>{r.utilisateur.prenom} {r.utilisateur.nom}</td>
