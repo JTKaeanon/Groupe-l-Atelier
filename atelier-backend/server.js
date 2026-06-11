@@ -20,7 +20,7 @@ const app = express();
 app.use(cors()); 
 app.use(express.json());
 
-// --- MIDDLEWARE DE SÉCURITÉ ADMIN ---
+// --- MIDDLEWARE ADMIN ---
 const verifierAdmin = async (req, res, next) => {
   try {
     // récupère l'ID envoyé par Front-End 
@@ -43,7 +43,7 @@ const verifierAdmin = async (req, res, next) => {
     res.status(500).json({ erreur: "Erreur lors de la vérification des droits." });
   }
 };
-// --- FIN DU MIDDLEWARE ---
+
 
 // ==========================================
 // TEST API
@@ -362,19 +362,34 @@ app.delete('/api/reservations/:id', async (req, res) => {
 });
 
 
-// RDV pour les coiffeurs
+// RDV pour les coiffeurs (Panneau Admin)
 app.get('/api/admin/reservations', verifierAdmin, async (req, res) => {
   try {
+    const maintenant = new Date();
+
+    // Auto update
+    await prisma.rendezVous.updateMany({
+      where: {
+        date_rdv: { lt: maintenant }, // "lt" "less than" (antérieur à)
+        statut: "A_VENIR"
+      },
+      data: {
+        statut: "TERMINE"
+      }
+    });
+
+    //  Liste
     const reservations = await prisma.rendezVous.findMany({
       include: {
-        utilisateur: true, // nom client
-        prestation: true,  // nom presta
-        employe: {         // qui
+        utilisateur: true,
+        prestation: true,
+        employe: {
           include: { salon: true } 
         }
       },
-      orderBy: { date_rdv: 'desc' } // plus récent au ancien
+      orderBy: { date_rdv: 'desc' }
     });
+
     res.json(reservations);
   } catch (error) {
     res.status(500).json({ erreur: "Impossible de récupérer les réservations" });
