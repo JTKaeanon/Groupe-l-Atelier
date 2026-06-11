@@ -17,7 +17,7 @@ export default function Admin() {
   const [formSalon, setFormSalon] = useState({ id: null, nom: '', adresse: '', telephone: '', image: '', presentationImage: '', slug: '', description: '', horaires: '' });
   const [isEditingSalon, setIsEditingSalon] = useState(false);
 
-  
+
 
   const [formStaff, setFormStaff] = useState({ nom: '', role: 'Coiffeur', salonId: '' });
   const [formHoraire, setFormHoraire] = useState({ jour: 'Lundi', heure_debut: '09:00', heure_fin: '18:00', employeId: '' });
@@ -42,7 +42,7 @@ export default function Admin() {
       const resP = await fetch('https://groupe-atelier-devoir-bilan.onrender.com/api/prestations', { cache: 'no-store' });
       const resS = await fetch('https://groupe-atelier-devoir-bilan.onrender.com/api/salons', { cache: 'no-store' });
       const resE = await fetch('https://groupe-atelier-devoir-bilan.onrender.com/api/employes', { cache: 'no-store' });
-      
+
       // autorisation
       const resR = await fetch('https://groupe-atelier-devoir-bilan.onrender.com/api/admin/reservations', {
         method: 'GET',
@@ -151,7 +151,7 @@ export default function Admin() {
       <div className="admin-content">
 
 
-       {/* onglet coiffeur rdv */}
+        {/* onglet coiffeur rdv */}
         {activeTab === 'reservations' && (
           <div className="admin-table-card">
             <h2><i className="bi bi-calendar3"></i> Liste des Rendez-vous</h2>
@@ -162,9 +162,9 @@ export default function Admin() {
                 <label style={{ marginRight: '10px', fontWeight: 'bold' }}>Filtrer par Salon :</label>
                 <select value={filtreSalon} onChange={(e) => setFiltreSalon(e.target.value)} style={{ padding: '5px', borderRadius: '4px' }}>
                   <option value="TOUS">Tous les salons</option>
-                  <option value="L'atelier mixte">L'atelier mixte</option>
-                  <option value="The Old School">The Old School</option>
-                  <option value="L'Essence de soi">L'Essence de soi</option>
+                  {salons.map(s => (
+                    <option key={s.id} value={s.nom}>{s.nom}</option>
+                  ))}
                 </select>
               </div>
 
@@ -172,9 +172,9 @@ export default function Admin() {
                 <label style={{ marginRight: '10px', fontWeight: 'bold' }}>Filtrer par Coiffeur :</label>
                 <select value={filtreCoiffeur} onChange={(e) => setFiltreCoiffeur(e.target.value)} style={{ padding: '5px', borderRadius: '4px' }}>
                   <option value="TOUS">Tous les coiffeurs</option>
-                  <option value="Marjorie">Marjorie</option>
-                  <option value="Ringo">Ringo</option>
-                  <option value="Coralie">Coralie</option>
+                  {employes.map(emp => (
+                    <option key={emp.id} value={emp.nom}>{emp.nom}</option>
+                  ))}
                 </select>
               </div>
             </div>
