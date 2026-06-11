@@ -36,10 +36,20 @@ export default function Admin() {
 
   const fetchData = async () => {
     try {
+      // user connecté
+      const user = JSON.parse(localStorage.getItem('utilisateur'));
+
       const resP = await fetch('https://groupe-atelier-devoir-bilan.onrender.com/api/prestations', { cache: 'no-store' });
       const resS = await fetch('https://groupe-atelier-devoir-bilan.onrender.com/api/salons', { cache: 'no-store' });
       const resE = await fetch('https://groupe-atelier-devoir-bilan.onrender.com/api/employes', { cache: 'no-store' });
-      const resR = await fetch('https://groupe-atelier-devoir-bilan.onrender.com/api/admin/reservations');
+      
+      // autorisation
+      const resR = await fetch('https://groupe-atelier-devoir-bilan.onrender.com/api/admin/reservations', {
+        method: 'GET',
+        headers: {
+          'x-user-id': user ? user.id : ''
+        }
+      });
 
       if (resP.ok) setPrestations(await resP.json());
       if (resS.ok) setSalons(await resS.json());
