@@ -149,8 +149,29 @@ export default function Reservation() {
           let heureActuelle = new Date(`1970-01-01T${horairesDuJour.heure_debut}:00`);
           let heureFin = new Date(`1970-01-01T${horairesDuJour.heure_fin}:00`);
 
+          // --- SÉCURITÉ : Vérifier l'heure actuelle ---
+          const maintenant = new Date();
+          const dateSelectionnee = new Date(formData.date);
+          const estAujourdhui = dateSelectionnee.toDateString() === maintenant.toDateString();
+
           while (heureActuelle < heureFin) {
-            creneaux.push(heureActuelle.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', ':'));
+            const heureTexte = heureActuelle.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', ':');
+            
+            let heureValide = true;
+
+            // Si  aujourd'hui, on masque les heures passées
+            if (estAujourdhui) {
+              if (heureActuelle.getHours() < maintenant.getHours()) {
+                heureValide = false; // heure  passée
+              } else if (heureActuelle.getHours() === maintenant.getHours() && heureActuelle.getMinutes() <= maintenant.getMinutes()) {
+                heureValide = false; // même heure, mais minute passée
+              }
+            }
+
+            if (heureValide) {
+              creneaux.push(heureTexte);
+            }
+
             heureActuelle.setMinutes(heureActuelle.getMinutes() + 30); // Saut de 30 min
           }
           setAvailableHours(creneaux);
